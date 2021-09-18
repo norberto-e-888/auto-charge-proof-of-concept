@@ -15,7 +15,7 @@ async function seedUsers() {
     );
   }
 
-  const parsedNumberOfUsers = parseInt(numberOfUsers);
+  const parsedNumberOfUsers = parseFloat(numberOfUsers);
   const roundedNumberOfUsers = Math.floor(parsedNumberOfUsers);
   if (Number.isNaN(parsedNumberOfUsers) || roundedNumberOfUsers <= 0) {
     throw new Error(
@@ -51,6 +51,6 @@ seedUsers()
     process.exit();
   })
   .catch((err) => {
-    console.error('Error running seed users script.', err);
+    console.error(err);
     process.exit();
   });
