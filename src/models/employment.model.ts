@@ -28,7 +28,7 @@ export class Employment {
   @Prop({
     type: Number,
   })
-  amount: number;
+  salary: number;
 }
 
 export const EmploymentSchema = SchemaFactory.createForClass(Employment);
