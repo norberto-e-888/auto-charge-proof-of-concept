@@ -10,6 +10,7 @@ export type PaymentDocument = Payment & Document;
   id: true,
   timestamps: {
     createdAt: true,
+    updatedAt: false,
   },
 })
 export class Payment {

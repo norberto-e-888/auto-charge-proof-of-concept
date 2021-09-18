@@ -5,9 +5,12 @@ export type UserDocument = User & Document;
 
 @Schema({
   id: true,
+  timestamps: true,
 })
 export class User {
   id: string;
+  createdAt: Date;
+  updatedAt: Date;
 
   @Prop({
     type: String,

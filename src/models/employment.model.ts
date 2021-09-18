@@ -8,9 +8,12 @@ export type EmploymentDocument = Employment & Document;
 
 @Schema({
   id: true,
+  timestamps: true,
 })
 export class Employment {
   id: string;
+  createdAt: Date;
+  updatedAt: Date;
 
   @Prop({
     type: Types.ObjectId,

@@ -6,9 +6,12 @@ export type ContractDocument = Contract & Document;
 
 @Schema({
   id: true,
+  timestamps: true,
 })
 export class Contract {
   id: string;
+  createdAt: Date;
+  updatedAt: Date;
 
   @Prop({
     type: Types.ObjectId,
