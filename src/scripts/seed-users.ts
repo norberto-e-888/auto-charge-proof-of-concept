@@ -11,7 +11,7 @@ async function seedUsers() {
   const [_, __, numberOfUsers] = process.argv;
   if (!numberOfUsers) {
     throw new Error(
-      'Please provide the number of user you want the collection to be seeded with.',
+      'Please provide the number of users you want the collection to be seeded with.',
     );
   }
 
