@@ -3,9 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bull';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AutoChargeModule } from './auto-charge/auto-charge.module';
 
 @Module({
@@ -21,7 +18,5 @@ import { AutoChargeModule } from './auto-charge/auto-charge.module';
     ScheduleModule.forRoot(),
     AutoChargeModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
