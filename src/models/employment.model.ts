@@ -38,24 +38,29 @@ export const EmploymentSchema = SchemaFactory.createForClass(Employment);
 EmploymentSchema.pre(
   'save',
   async function (this: EmploymentDocument, next: HookNextFunction) {
-    const ContractModel: Model<ContractDocument> = this.db.model(Contract.name);
-    const contract = await ContractModel.findById(this.contract);
-    if (!contract) {
-      next(
-        new HttpException(
-          `No contract exists with ID: ${this.contract}`,
-          HttpStatus.BAD_REQUEST,
-        ),
+    if (this.isModified('user') || this.isModified('contract')) {
+      const ContractModel: Model<ContractDocument> = this.db.model(
+        Contract.name,
       );
-    }
 
-    if (contract.user !== this.user) {
-      next(
-        new HttpException(
-          `An employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
-          HttpStatus.BAD_REQUEST,
-        ),
-      );
+      const contract = await ContractModel.findById(this.contract);
+      if (!contract) {
+        next(
+          new HttpException(
+            `No contract exists with ID: ${this.contract}`,
+            HttpStatus.BAD_REQUEST,
+          ),
+        );
+      }
+
+      if (contract.user !== this.user) {
+        next(
+          new HttpException(
+            `An employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
+            HttpStatus.BAD_REQUEST,
+          ),
+        );
+      }
     }
 
     next();
