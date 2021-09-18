@@ -52,7 +52,9 @@ EmploymentSchema.pre(
       );
     }
 
-    if (contract.user !== this.user) {
+    if (
+      !(contract.user as Types.ObjectId).equals(this.user as Types.ObjectId)
+    ) {
       next(
         new HttpException(
           `This employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
