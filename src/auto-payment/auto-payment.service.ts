@@ -42,13 +42,12 @@ export class AutoPaymentService {
               effectiveLoanAmount,
               salary,
               salaryPercentageOwed,
-              failures: 0,
             },
             opts: {
-              attempts: 6,
+              attempts: 5,
               backoff: {
                 type: 'exponential',
-                delay: 150,
+                delay: 5000,
               },
             },
           }),

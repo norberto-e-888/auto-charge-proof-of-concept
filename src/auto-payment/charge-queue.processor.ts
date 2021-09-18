@@ -10,15 +10,9 @@ export class ChargeQueueProcessor {
   @Process()
   async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
     try {
-      if (job.data.test) {
-        this.logger.debug(
-          `FORCED: ${job.attemptsMade}, ${job.data.contractId}`,
-        );
-
-        done(new Error('forced error'));
-      } else {
-        done();
-      }
+      this.logger.debug(
+        `Processing payment for contract: ${job.data.contractId}`,
+      );
     } catch (error) {
       done(new Error(error));
       this.logger.error(
