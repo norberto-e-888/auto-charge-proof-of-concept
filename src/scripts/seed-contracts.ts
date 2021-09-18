@@ -9,7 +9,6 @@ async function seedContracts() {
   });
 
   const db = connection.db('meratas_poc');
-
   const users: UserDocument[] = await db.collection('users').find().toArray();
   const bulkWritePromises: Promise<
     InsertOneWriteOpResult<unknown & { _id: Types.ObjectId }>
