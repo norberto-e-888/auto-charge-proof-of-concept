@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 
 @Injectable()
-export class AutoPaymentsService {
-  private readonly logger = new Logger(AutoPaymentsService.name);
+export class AutoPaymentService {
+  private readonly logger = new Logger(AutoPaymentService.name);
 
   @Interval(5000)
   writeAutoPaymentsToMessageQueue() {

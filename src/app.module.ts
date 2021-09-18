@@ -4,14 +4,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AutoPaymentsService } from './cron/auto-payment';
+import { AutoPaymentModule } from './auto-payment/auto-payment.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost/meratas_poc'),
     ScheduleModule.forRoot(),
+    AutoPaymentModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AutoPaymentsService],
+  providers: [AppService],
 })
 export class AppModule {}
