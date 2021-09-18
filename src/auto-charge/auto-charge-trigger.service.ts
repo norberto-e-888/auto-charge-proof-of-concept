@@ -13,7 +13,7 @@ export class AutoChargeTrigger {
     private writeChargesQueue: Queue<WriteChargesToQueueData>,
   ) {}
 
-  @Interval(5000)
+  @Interval(60000)
   async initiateAutoCharge() {
     try {
       const present = new Date();

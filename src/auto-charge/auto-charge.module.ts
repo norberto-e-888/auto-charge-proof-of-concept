@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { StripeProvider } from 'src/lib/stripe';
 import { Contract, ContractSchema } from 'src/models/contract.model';
 import { Employment, EmploymentSchema } from 'src/models/employment.model';
 import { User, UserSchema } from 'src/models/user.model';
@@ -29,6 +30,7 @@ import { WriteChargesToQueueProcessor } from './write-charges-to-queue.processor
     AutoChargeTrigger,
     WriteChargesToQueueProcessor,
     ChargeQueueProcessor,
+    StripeProvider,
   ],
 })
 export class AutoChargeModule {}
