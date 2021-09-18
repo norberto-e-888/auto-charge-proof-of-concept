@@ -5,7 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AutoPaymentModule } from './auto-payment/auto-payment.module';
+import { AutoChargeModule } from './auto-charge/auto-charge.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { AutoPaymentModule } from './auto-payment/auto-payment.module';
       },
     }),
     ScheduleModule.forRoot(),
-    AutoPaymentModule,
+    AutoChargeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,27 +1,35 @@
-import { InjectQueue } from '@nestjs/bull';
-import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Interval } from '@nestjs/schedule';
-import { JobOptions, Queue } from 'bull';
+import { DoneCallback, Job, Queue } from 'bull';
 import { Model } from 'mongoose';
 import { Employment, EmploymentDocument } from 'src/models/employment.model';
-import { AutoPaymentQueue, ChargeQueueData } from './typings';
+import {
+  AddBulkPayload,
+  AutoChargeQueue,
+  ChargeQueueData,
+  WriteChargesToQueueData,
+} from './typings';
 
-@Injectable()
-export class AutoPaymentService {
-  private readonly logger = new Logger(AutoPaymentService.name);
+@Processor(AutoChargeQueue.WriteChargesToQueue)
+export class WriteChargesToQueueProcessor {
+  private readonly logger = new Logger(WriteChargesToQueueProcessor.name);
 
   constructor(
-    @InjectQueue(AutoPaymentQueue.Charge)
-    private chargeQueue: Queue,
+    @InjectQueue(AutoChargeQueue.Charge)
+    private chargeQueue: Queue<ChargeQueueData>,
     @InjectModel(Employment.name)
     private employmentModel: Model<EmploymentDocument>,
   ) {}
 
-  @Interval(5000)
-  async writeAutoPaymentsToMessageQueue() {
+  @Process()
+  async writeAutoCharges(
+    job: Job<WriteChargesToQueueData>,
+    done: DoneCallback,
+  ) {
     try {
-      this.logger.log('Running writeAutoPaymentsToMessageQueue');
+      const { month, year } = job.data;
+      this.logger.debug(`Writing auto-charges to queue for: ${month}/${year}`);
       const employments = await this.employmentModel
         .find()
         .populate('contract');
@@ -31,7 +39,7 @@ export class AutoPaymentService {
           salary >= minimumIncomeThreshold,
       );
 
-      const chargeQueueData: AddBulk<ChargeQueueData> =
+      const chargeQueueData: AddBulkPayload<ChargeQueueData> =
         employmentsThatSurpassMinimumThreshold.map(
           ({
             contract: { id, effectiveLoanAmount, salaryPercentageOwed },
@@ -42,6 +50,8 @@ export class AutoPaymentService {
               effectiveLoanAmount,
               salary,
               salaryPercentageOwed,
+              month,
+              year,
             },
             opts: {
               attempts: 5,
@@ -54,17 +64,12 @@ export class AutoPaymentService {
         );
 
       await this.chargeQueue.addBulk(chargeQueueData);
+      done();
     } catch (error) {
+      done(new Error(error));
       this.logger.error(
-        'Error running "writeAutoPaymentsToMessageQueue"',
-        error,
+        `Error writing charges to queue contract for: ${job.data.month}/${job.data.year}. ${error}`,
       );
     }
   }
 }
-
-type AddBulk<T> = {
-  name?: string;
-  data: T;
-  opts?: JobOptions;
-}[];

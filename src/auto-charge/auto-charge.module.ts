@@ -4,9 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Contract, ContractSchema } from 'src/models/contract.model';
 import { Employment, EmploymentSchema } from 'src/models/employment.model';
 import { User, UserSchema } from 'src/models/user.model';
-import { AutoPaymentService } from './auto-payment.service';
+import { AutoChargeTrigger } from './auto-charge-trigger.service';
 import { ChargeQueueProcessor } from './charge-queue.processor';
-import { AutoPaymentQueue } from './typings';
+import { AutoChargeQueue } from './typings';
+import { WriteChargesToQueueProcessor } from './write-charges-to-queue.processor';
 
 @Module({
   imports: [
@@ -15,10 +16,19 @@ import { AutoPaymentQueue } from './typings';
       { name: Contract.name, schema: ContractSchema },
       { name: Employment.name, schema: EmploymentSchema },
     ]),
-    BullModule.registerQueue({
-      name: AutoPaymentQueue.Charge,
-    }),
+    BullModule.registerQueue(
+      {
+        name: AutoChargeQueue.WriteChargesToQueue,
+      },
+      {
+        name: AutoChargeQueue.Charge,
+      },
+    ),
   ],
-  providers: [AutoPaymentService, ChargeQueueProcessor],
+  providers: [
+    AutoChargeTrigger,
+    WriteChargesToQueueProcessor,
+    ChargeQueueProcessor,
+  ],
 })
-export class AutoPaymentModule {}
+export class AutoChargeModule {}
