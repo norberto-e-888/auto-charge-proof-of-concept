@@ -56,7 +56,7 @@ EmploymentSchema.pre(
       if (contract.user !== this.user) {
         next(
           new HttpException(
-            `An employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
+            `This employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
             HttpStatus.BAD_REQUEST,
           ),
         );
