@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DoneCallback, Job, Queue } from 'bull';
 import { Model } from 'mongoose';
+import { Contract } from 'src/models/contract.model';
 import { Employment, EmploymentDocument } from 'src/models/employment.model';
 import {
   AddBulkPayload,
@@ -35,16 +36,18 @@ export class WriteChargesToQueueProcessor {
         .populate('contract');
 
       const employmentsThatSurpassMinimumThreshold = employments.filter(
-        ({ salary, contract: { minimumIncomeThreshold } }) =>
-          salary >= minimumIncomeThreshold,
+        ({ salary, contract }) => {
+          const { minimumIncomeThreshold } = contract as Contract;
+          return salary >= minimumIncomeThreshold;
+        },
       );
 
       const chargeQueueData: AddBulkPayload<ChargeQueueData> =
-        employmentsThatSurpassMinimumThreshold.map(
-          ({
-            contract: { id, effectiveLoanAmount, salaryPercentageOwed },
-            salary,
-          }) => ({
+        employmentsThatSurpassMinimumThreshold.map(({ contract, salary }) => {
+          const { id, effectiveLoanAmount, salaryPercentageOwed } =
+            contract as Contract;
+
+          return {
             data: {
               contractId: id,
               effectiveLoanAmount,
@@ -60,8 +63,8 @@ export class WriteChargesToQueueProcessor {
                 delay: 5000,
               },
             },
-          }),
-        );
+          };
+        });
 
       await this.chargeQueue.addBulk(chargeQueueData);
       done();
