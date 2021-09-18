@@ -7,5 +7,4 @@ export interface ChargeQueueData {
   effectiveLoanAmount: number;
   salary: number;
   salaryPercentageOwed: number;
-  test?: boolean;
 }

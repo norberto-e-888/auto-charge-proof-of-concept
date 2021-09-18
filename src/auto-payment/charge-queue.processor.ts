@@ -8,11 +8,13 @@ export class ChargeQueueProcessor {
   private readonly logger = new Logger(ChargeQueueProcessor.name);
 
   @Process()
-  async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
+  charge(job: Job<ChargeQueueData>, done: DoneCallback) {
     try {
       this.logger.debug(
         `Processing payment for contract: ${job.data.contractId}`,
       );
+
+      done();
     } catch (error) {
       done(new Error(error));
       this.logger.error(
