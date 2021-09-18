@@ -4,18 +4,21 @@ import { Document, HookNextFunction, Model, Types } from 'mongoose';
 import { Contract, ContractDocument } from './contract.model';
 import { User } from './user.model';
 
-export type EmploymentDocument = Employment & Document;
+export type PaymentDocument = Payment & Document;
 
 @Schema({
   id: true,
+  timestamps: {
+    createdAt: true,
+  },
 })
-export class Employment {
+export class Payment {
   id: string;
+  createdAt: Date;
 
   @Prop({
     type: Types.ObjectId,
     required: true,
-    unique: true,
     ref: Contract.name,
   })
   contract: Contract;
@@ -29,15 +32,17 @@ export class Employment {
 
   @Prop({
     type: Number,
+    required: true,
+    min: 0.01,
   })
-  salary: number;
+  amount: number;
 }
 
-export const EmploymentSchema = SchemaFactory.createForClass(Employment);
+export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
-EmploymentSchema.pre(
+PaymentSchema.pre(
   'save',
-  async function (this: EmploymentDocument, next: HookNextFunction) {
+  async function (this: PaymentDocument, next: HookNextFunction) {
     const ContractModel: Model<ContractDocument> = this.db.model(Contract.name);
     const contract = await ContractModel.findById(this.contract);
     if (!contract) {
@@ -52,7 +57,7 @@ EmploymentSchema.pre(
     if (contract.user !== this.user) {
       next(
         new HttpException(
-          `This employment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
+          `This payment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,
           HttpStatus.BAD_REQUEST,
         ),
       );
@@ -61,3 +66,5 @@ EmploymentSchema.pre(
     next();
   },
 );
+
+export enum PaymentType {}
