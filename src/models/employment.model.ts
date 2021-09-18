@@ -10,6 +10,8 @@ export type EmploymentDocument = Employment & Document;
   id: true,
 })
 export class Employment {
+  id: string;
+
   @Prop({
     type: Types.ObjectId,
     required: true,

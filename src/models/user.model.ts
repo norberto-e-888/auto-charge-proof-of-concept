@@ -7,6 +7,8 @@ export type UserDocument = User & Document;
   id: true,
 })
 export class User {
+  id: string;
+
   @Prop({
     type: String,
     required: true,

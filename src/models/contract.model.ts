@@ -8,6 +8,8 @@ export type ContractDocument = Contract & Document;
   id: true,
 })
 export class Contract {
+  id: string;
+
   @Prop({
     type: Types.ObjectId,
     required: true,
