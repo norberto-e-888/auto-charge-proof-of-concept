@@ -21,14 +21,14 @@ export class Payment {
     required: true,
     ref: Contract.name,
   })
-  contract: Contract;
+  contract: Contract | Types.ObjectId | string;
 
   @Prop({
     type: Types.ObjectId,
     required: true,
     ref: User.name,
   })
-  user: User;
+  user: User | Types.ObjectId | string;
 
   @Prop({
     type: Number,
@@ -36,6 +36,13 @@ export class Payment {
     min: 0.01,
   })
   amount: number;
+
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+  })
+  stripePaymentReference: string;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
@@ -54,7 +61,9 @@ PaymentSchema.pre(
       );
     }
 
-    if (contract.user !== this.user) {
+    if (
+      !(contract.user as Types.ObjectId).equals(this.user as Types.ObjectId)
+    ) {
       next(
         new HttpException(
           `This payment cannot be assigned to any other user but the one related to the contract with ID: ${this.contract} `,

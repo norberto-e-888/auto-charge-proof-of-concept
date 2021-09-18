@@ -15,7 +15,7 @@ export class Contract {
     required: true,
     ref: User.name,
   })
-  user: User;
+  user: User | Types.ObjectId | string;
 
   @Prop({
     type: Number,

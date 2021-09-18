@@ -18,14 +18,14 @@ export class Employment {
     unique: true,
     ref: Contract.name,
   })
-  contract: Contract;
+  contract: Contract | Types.ObjectId | string;
 
   @Prop({
     type: Types.ObjectId,
     required: true,
     ref: User.name,
   })
-  user: User;
+  user: User | Types.ObjectId | string;
 
   @Prop({
     type: Number,
