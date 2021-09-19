@@ -38,11 +38,7 @@ export class ChargeDLQProcessor {
       const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
         job.data;
 
-      const idempotencyKey = autoChargeIdempotencyKey(
-        job.data,
-        PaymentStatus.Success,
-      );
-
+      const idempotencyKey = autoChargeIdempotencyKey(job.data);
       const contract = await this.contractModel
         .findById(contractId)
         .populate('user');
@@ -80,10 +76,7 @@ export class ChargeDLQProcessor {
           user: new Types.ObjectId((contract.user as User).id),
           type: PaymentType.Auto,
           status: PaymentStatus.Failure,
-          idempotencyKey: autoChargeIdempotencyKey(
-            job.data,
-            PaymentStatus.Failure,
-          ),
+          idempotencyKey: autoChargeIdempotencyKey(job.data),
           contractStateSnapshot: {
             effectiveLoanAmount,
             salaryPercentageOwed,

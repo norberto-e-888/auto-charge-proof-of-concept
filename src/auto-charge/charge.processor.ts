@@ -60,11 +60,7 @@ export class ChargeQueueProcessor {
         remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
       );
 
-      const idempotencyKey = autoChargeIdempotencyKey(
-        job.data,
-        PaymentStatus.Success,
-      );
-
+      const idempotencyKey = autoChargeIdempotencyKey(job.data);
       const paymentIntent = await this.stripe.paymentIntents.create(
         {
           amount: paymentAmount,
@@ -105,10 +101,7 @@ export class ChargeQueueProcessor {
         if (job.attemptsMade >= 5) {
           try {
             this.logger.warn(
-              `Moving charge job ${autoChargeIdempotencyKey(
-                job.data,
-                PaymentStatus.Success,
-              )} to DLQ`,
+              `Moving charge job ${autoChargeIdempotencyKey(job.data)} to DLQ`,
             );
 
             await this.chargeQueueDLQ.add(
@@ -130,7 +123,6 @@ export class ChargeQueueProcessor {
             this.logger.error(
               `Error moving charge job to DLQ: ${autoChargeIdempotencyKey(
                 job.data,
-                PaymentStatus.Success,
               )}`,
             );
 
