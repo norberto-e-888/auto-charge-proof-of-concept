@@ -52,7 +52,6 @@ export class ChargeDLQProcessor {
           ({ metadata }) => metadata.idempotencyKey === idempotencyKey,
         ).length !== 0;
 
-      this.logger.debug(wasPaymentProcessed);
       if (!wasPaymentProcessed) {
         const paymentsMadeForContract = await this.paymentModel.find({
           contract: contractId,
