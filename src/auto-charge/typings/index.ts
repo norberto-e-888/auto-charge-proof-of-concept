@@ -23,3 +23,7 @@ export type AddBulkPayload<T> = {
   data: T;
   opts?: JobOptions;
 }[];
+
+export type UnprocessableData = {
+  charges: { [key: string]: ChargeQueueData };
+};

@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { DoneCallback, Job } from 'bull';
 import { Model, Types } from 'mongoose';
 import Stripe from 'stripe';
+import fs from 'fs';
 import { STRIPE } from 'src/lib/stripe';
 import {
   Payment,
@@ -11,7 +12,7 @@ import {
   PaymentStatus,
   PaymentType,
 } from 'src/models/payment.model';
-import { AutoChargeQueue, ChargeQueueData } from './typings';
+import { AutoChargeQueue, ChargeQueueData, UnprocessableData } from './typings';
 import { autoChargeIdempotencyKey } from './util/auto-charge-idempotency-key';
 import { User } from 'src/models/user.model';
 import { Contract, ContractDocument } from 'src/models/contract.model';
@@ -82,6 +83,12 @@ export class ChargeDLQProcessor {
             salary,
           },
         });
+      } else {
+        const file = `${__dirname}/data/unprocessable.json`;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const unprocessable: UnprocessableData = require(file);
+        unprocessable.charges[idempotencyKey] = job.data;
+        fs.writeFileSync(file, JSON.stringify(unprocessable));
       }
 
       done();
