@@ -18,9 +18,9 @@ export class WriteChargesToQueueProcessor {
 
   constructor(
     @InjectQueue(AutoChargeQueue.Charge)
-    private chargeQueue: Queue<ChargeQueueData>,
+    private readonly chargeQueue: Queue<ChargeQueueData>,
     @InjectModel(Employment.name)
-    private employmentModel: Model<EmploymentDocument>,
+    private readonly employmentModel: Model<EmploymentDocument>,
   ) {}
 
   @Process()

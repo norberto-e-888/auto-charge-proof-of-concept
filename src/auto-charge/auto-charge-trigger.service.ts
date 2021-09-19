@@ -10,7 +10,7 @@ export class AutoChargeTrigger {
 
   constructor(
     @InjectQueue(AutoChargeQueue.WriteChargesToQueue)
-    private writeChargesQueue: Queue<WriteChargesToQueueData>,
+    private readonly writeChargesQueue: Queue<WriteChargesToQueueData>,
   ) {}
 
   @Interval(60000)

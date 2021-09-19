@@ -75,6 +75,7 @@ export class Payment {
     required: function (this: PaymentDocument) {
       return this.type === PaymentType.Auto;
     },
+    unique: true,
   })
   idempotencyKey: string;
 

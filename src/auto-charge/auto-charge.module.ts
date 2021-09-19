@@ -34,5 +34,6 @@ import { WriteChargesToQueueProcessor } from './write-charges-to-queue.processor
     ChargeQueueProcessor,
     StripeProvider,
   ],
+  exports: [BullModule],
 })
 export class AutoChargeModule {}
