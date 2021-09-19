@@ -87,7 +87,6 @@ export class ChargeQueueProcessor {
 
         done();
       } else {
-        this.logger.debug(`Number of attempts: ${job.attemptsMade}`);
         this.logger.error(
           `Error charching contract with ID: ${job.data.contractId}. ${error.message}`,
         );

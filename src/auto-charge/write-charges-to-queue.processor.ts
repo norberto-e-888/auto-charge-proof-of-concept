@@ -71,7 +71,7 @@ export class WriteChargesToQueueProcessor {
     } catch (error) {
       done(new Error(error));
       this.logger.error(
-        `Error writing charges to queue contract for: ${job.data.month}/${job.data.year}. ${error}`,
+        `Error writing charges to queue for: ${job.data.month}/${job.data.year}. ${error}`,
       );
     }
   }
