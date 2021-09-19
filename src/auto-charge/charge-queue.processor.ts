@@ -64,8 +64,7 @@ export class ChargeQueueProcessor {
         { idempotencyKey },
       );
 
-      this.logger.debug(paymentIntent.id);
-      const payment = await this.paymentModel.create({
+      await this.paymentModel.create({
         contract: new Types.ObjectId(contractId),
         amount: paymentAmount,
         user: contract.user,
@@ -79,13 +78,21 @@ export class ChargeQueueProcessor {
         },
       });
 
-      this.logger.debug(`Successful payment: ${payment}`);
       done();
     } catch (error) {
-      done(new Error(error));
-      this.logger.error(
-        `Error charching contract with ID: ${job.data.contractId}. ${error}`,
-      );
+      if (error.code && error.code === 11000) {
+        this.logger.warn(
+          `Caught duplicate job in queue "${AutoChargeQueue.Charge}". Acknowledging...`,
+        );
+
+        done();
+      } else {
+        this.logger.error(
+          `Error charching contract with ID: ${job.data.contractId}. ${error.message}`,
+        );
+
+        done(new Error(error));
+      }
     }
   }
 }
