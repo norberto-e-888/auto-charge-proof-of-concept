@@ -29,10 +29,19 @@ export class ChargeQueueProcessor {
   @Process()
   async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
     try {
-      this.logger.debug(`Auto-charging contract: ${job.data.contractId}`);
-      const contract = await this.contractModel.findById(job.data.contractId);
+      const {
+        contractId,
+        effectiveLoanAmount,
+        salary,
+        salaryPercentageOwed,
+        month,
+        year,
+      } = job.data;
+
+      this.logger.debug(`Auto-charging contract: ${contractId}`);
+      const contract = await this.contractModel.findById(contractId);
       const paymentsMadeForContract = await this.paymentModel.find({
-        contract: job.data.contractId,
+        contract: contractId,
       });
 
       const totalPaidSoFar = paymentsMadeForContract.reduce(
@@ -40,13 +49,13 @@ export class ChargeQueueProcessor {
         0,
       );
 
-      const remainingDebt = job.data.effectiveLoanAmount - totalPaidSoFar;
-      const incomeOwed = (job.data.salary / 12) * job.data.salaryPercentageOwed;
+      const remainingDebt = effectiveLoanAmount - totalPaidSoFar;
+      const incomeOwed = (salary / 12) * salaryPercentageOwed;
       const paymentAmount = Math.round(
         remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
       );
 
-      const idempotencyKey = `${job.data.contractId}-${job.data.month}/${job.data.year}-${PaymentType.Auto}`;
+      const idempotencyKey = `${contractId}-${month}/${year}-${PaymentType.Auto}`;
       const paymentIntent = await this.stripe.paymentIntents.create(
         {
           amount: paymentAmount,
@@ -57,12 +66,17 @@ export class ChargeQueueProcessor {
 
       this.logger.debug(paymentIntent.id);
       const payment = await this.paymentModel.create({
-        contract: new Types.ObjectId(job.data.contractId),
+        contract: new Types.ObjectId(contractId),
         amount: paymentAmount,
         user: contract.user,
         stripePaymentReference: paymentIntent.id,
         type: PaymentType.Auto,
         idempotencyKey,
+        contractStateSnapshot: {
+          effectiveLoanAmount,
+          salaryPercentageOwed,
+          salary,
+        },
       });
 
       this.logger.debug(`Successful payment: ${payment}`);

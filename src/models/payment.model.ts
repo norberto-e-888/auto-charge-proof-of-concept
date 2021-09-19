@@ -1,5 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import {
+  Prop,
+  PropOptions,
+  raw,
+  Schema,
+  SchemaFactory,
+} from '@nestjs/mongoose';
 import { Document, HookNextFunction, Model, Types } from 'mongoose';
 import { Contract, ContractDocument } from './contract.model';
 import { User } from './user.model';
@@ -9,6 +15,14 @@ export enum PaymentType {
   Auto = 'auto',
   Manual = 'manual',
 }
+
+const ContractStateProp: { [key in keyof ContractStateSnapshot]: PropOptions } =
+  {
+    effectiveLoanAmount: { type: Number },
+    salaryPercentageOwed: { type: Number },
+    minimumIncomeThreshold: { type: Number },
+    salary: { type: Number },
+  };
 
 @Schema({
   id: true,
@@ -63,6 +77,9 @@ export class Payment {
     },
   })
   idempotencyKey: string;
+
+  @Prop(raw(ContractStateProp))
+  contractStateSnapshot: ContractStateSnapshot;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
@@ -95,3 +112,10 @@ PaymentSchema.pre(
     next();
   },
 );
+
+export interface ContractStateSnapshot {
+  effectiveLoanAmount: number;
+  salaryPercentageOwed: number;
+  minimumIncomeThreshold: number;
+  salary: number;
+}
