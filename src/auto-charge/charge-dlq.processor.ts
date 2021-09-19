@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { DoneCallback, Job } from 'bull';
 import { Model, Types } from 'mongoose';
 import Stripe from 'stripe';
-import fs from 'fs';
+import * as fs from 'fs';
 import { STRIPE } from 'src/lib/stripe';
 import {
   Payment,
@@ -31,10 +31,7 @@ export class ChargeDLQProcessor {
   ) {}
 
   @Process()
-  async charge(
-    job: Job<ChargeQueueData & { error: unknown }>,
-    done: DoneCallback,
-  ) {
+  async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
     try {
       const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
         job.data;

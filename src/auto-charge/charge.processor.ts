@@ -28,9 +28,7 @@ export class ChargeQueueProcessor {
     @InjectModel(Contract.name)
     private readonly contractModel: Model<ContractDocument>,
     @InjectQueue(AutoChargeQueue.ChargeDLQ)
-    private readonly chargeQueueDLQ: Queue<
-      ChargeQueueData & { error: unknown }
-    >,
+    private readonly chargeQueueDLQ: Queue<ChargeQueueData>,
   ) {}
 
   @Process()
@@ -73,6 +71,10 @@ export class ChargeQueueProcessor {
         { idempotencyKey },
       );
 
+      if (contractId === '61479c8c8ce7264024384c69') {
+        throw new Error('Forced error');
+      }
+
       await this.paymentModel.create({
         contract: new Types.ObjectId(contractId),
         amount: paymentAmount,
@@ -97,26 +99,19 @@ export class ChargeQueueProcessor {
 
         done();
       } else {
-        this.logger.debug(job.attemptsMade);
         if (job.attemptsMade >= 5) {
           try {
             this.logger.warn(
               `Moving charge job ${autoChargeIdempotencyKey(job.data)} to DLQ`,
             );
 
-            await this.chargeQueueDLQ.add(
-              {
-                ...job.data,
-                error,
+            await this.chargeQueueDLQ.add(job.data, {
+              attempts: 4,
+              backoff: {
+                type: 'exponential',
+                delay: 100,
               },
-              {
-                attempts: 4,
-                backoff: {
-                  type: 'exponential',
-                  delay: 100,
-                },
-              },
-            );
+            });
 
             done();
           } catch (error) {
