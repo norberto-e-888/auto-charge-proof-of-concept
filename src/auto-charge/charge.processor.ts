@@ -82,7 +82,7 @@ export class ChargeQueueProcessor {
         user: contract.user,
         type: PaymentType.Auto,
         status: PaymentStatus.Success,
-        stripePaymentReference: paymentIntent.id,
+        stripeReference: paymentIntent.id,
         idempotencyKey,
         contractStateSnapshot: {
           effectiveLoanAmount,

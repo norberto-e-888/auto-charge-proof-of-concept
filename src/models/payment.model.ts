@@ -89,7 +89,7 @@ export class Payment {
       return val;
     },
   })
-  stripePaymentReference: string;
+  stripeReference: string;
 
   @Prop({
     type: String,
