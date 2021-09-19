@@ -15,13 +15,15 @@ async function seedContracts() {
   >[] = [];
 
   users.forEach(({ _id }) => {
-    const effectiveLoanAmount = faker.commerce.price(500, 75000, 0);
-    const salaryPercentageOwed = Math.random();
-    const minimumIncomeThreshold = faker.commerce.price(30000, 40000, 0);
+    const effectiveLoanAmount = faker.commerce.price(5000, 75000, 0);
+    const salaryPercentageOwed =
+      Math.floor(Math.random() * 0.15 * 100) / 100 + 0.05;
+
+    const minimumIncomeThreshold = 50000;
     bulkWritePromises.push(
       db.collection('contracts').insertOne({
         user: _id,
-        effectiveLoanAmount,
+        effectiveLoanAmount: parseInt(effectiveLoanAmount),
         salaryPercentageOwed,
         minimumIncomeThreshold,
       }),

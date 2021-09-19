@@ -22,12 +22,12 @@ async function seedEmployments() {
     // random noop to ensure not all contracts have employments (AKA the student is employed or not)
     // 50/50 chance
     if (Math.random() > 0.5) {
-      const salary = faker.commerce.price(20000, 500000, 0);
+      const salary = faker.commerce.price(25000, 200000, 0);
       bulkWritePromises.push(
         db.collection('employments').insertOne({
           user,
           contract: _id,
-          salary,
+          salary: parseInt(salary),
         }),
       );
     }
