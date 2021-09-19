@@ -62,6 +62,7 @@ export class ChargeQueueProcessor {
         user: contract.user,
         stripePaymentReference: paymentIntent.id,
         type: PaymentType.Auto,
+        idempotencyKey,
       });
 
       this.logger.debug(`Successful payment: ${payment}`);

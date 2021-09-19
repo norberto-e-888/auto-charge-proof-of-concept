@@ -55,6 +55,14 @@ export class Payment {
     enum: Object.values(PaymentType),
   })
   type: PaymentType;
+
+  @Prop({
+    type: String,
+    required: function (this: PaymentDocument) {
+      return this.type === PaymentType.Auto;
+    },
+  })
+  idempotencyKey: string;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
