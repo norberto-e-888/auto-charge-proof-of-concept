@@ -1,6 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Cron, CronExpression /* Interval */ } from '@nestjs/schedule';
 import { Queue } from 'bull';
 import { AutoChargeQueue, WriteChargesToQueueData } from './typings';
 
@@ -13,7 +13,8 @@ export class AutoChargeTrigger {
     private readonly writeChargesQueue: Queue<WriteChargesToQueueData>,
   ) {}
 
-  @Interval(60000)
+  // @Interval(60000) Uncomment this and comment out @Cron for testing purposes
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async initiateAutoCharge() {
     try {
       const present = new Date();
