@@ -102,7 +102,7 @@ export class ChargeQueueProcessor {
             );
 
             await this.chargeQueueDLQ.add(job.data, {
-              attempts: 4,
+              attempts: 5,
               backoff: {
                 type: 'exponential',
                 delay: 100,

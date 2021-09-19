@@ -17,7 +17,7 @@ export class AutoChargeTrigger {
   async initiateAutoCharge() {
     try {
       const present = new Date();
-      const month = present.getMonth() + 1; // adding 1 to count from 1 instead of 0
+      const month = present.getMonth() + 1;
       const year = present.getFullYear();
       this.logger.debug(`Initiating auto-charge for: ${month}/${year}`);
       await this.writeChargesQueue.add(
@@ -26,7 +26,7 @@ export class AutoChargeTrigger {
           year,
         },
         {
-          attempts: 10,
+          attempts: 5,
           backoff: {
             type: 'exponential',
             delay: 1000,
