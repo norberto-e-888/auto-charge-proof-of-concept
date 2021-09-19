@@ -11,6 +11,7 @@ import {
   PaymentStatus,
   PaymentType,
 } from 'src/models/payment.model';
+import { User } from 'src/models/user.model';
 import Stripe from 'stripe';
 import { AutoChargeQueue, ChargeQueueData } from './typings';
 import autoChargeIdempotencyKey from './util/auto-charge-idempotency-key';
@@ -43,7 +44,10 @@ export class ChargeQueueProcessor {
       }
 
       this.logger.debug(`Auto-charging contract: ${contractId}`);
-      const contract = await this.contractModel.findById(contractId);
+      const contract = await this.contractModel
+        .findById(contractId)
+        .populate('user');
+
       const paymentsMadeForContract = await this.paymentModel.find({
         contract: contractId,
       });
@@ -64,6 +68,10 @@ export class ChargeQueueProcessor {
         {
           amount: paymentAmount,
           currency: 'usd',
+          customer: (contract.user as User).stripeReference,
+          metadata: {
+            idempotencyKey,
+          },
         },
         { idempotencyKey },
       );

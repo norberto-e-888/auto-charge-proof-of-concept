@@ -8,7 +8,7 @@ import { Payment, PaymentSchema } from 'src/models/payment.model';
 import { User, UserSchema } from 'src/models/user.model';
 import { AutoChargeTrigger } from './auto-charge-trigger.service';
 import { ChargeDLQProcessor } from './charge-dlq.processor';
-import { ChargeQueueProcessor } from './charge-queue.processor';
+import { ChargeQueueProcessor } from './charge.processor';
 import { AutoChargeQueue } from './typings';
 import { WriteChargesToQueueProcessor } from './write-charges-to-queue.processor';
 

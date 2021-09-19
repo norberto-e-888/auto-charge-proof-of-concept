@@ -8,7 +8,9 @@ import { STRIPE } from 'src/lib/stripe';
 import { Payment, PaymentDocument } from 'src/models/payment.model';
 
 import { AutoChargeQueue, ChargeQueueData } from './typings';
-import autoChargeIdempotencyKey from './util/auto-charge-idempotency-key';
+// import autoChargeIdempotencyKey from './util/auto-charge-idempotency-key';
+import { User } from 'src/models/user.model';
+import { Contract, ContractDocument } from 'src/models/contract.model';
 
 @Processor(AutoChargeQueue.ChargeDLQ)
 export class ChargeDLQProcessor {
@@ -19,6 +21,8 @@ export class ChargeDLQProcessor {
     private readonly stripe: Stripe,
     @InjectModel(Payment.name)
     private readonly paymentModel: Model<PaymentDocument>,
+    @InjectModel(Contract.name)
+    private readonly contractModel: Model<ContractDocument>,
   ) {}
 
   @Process()
@@ -27,9 +31,13 @@ export class ChargeDLQProcessor {
     done: DoneCallback,
   ) {
     try {
-      const idempotencyKey = autoChargeIdempotencyKey(job.data);
+      // const idempotencyKey = autoChargeIdempotencyKey(job.data);
+      const contract = await this.contractModel
+        .findById(job.data.contractId)
+        .populate('user');
+
       const response = await this.stripe.paymentIntents.list({
-        idempotencyKey,
+        customer: (contract.user as User).stripeReference,
       });
 
       this.logger.debug(response);

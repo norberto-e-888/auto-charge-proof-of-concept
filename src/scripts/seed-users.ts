@@ -1,8 +1,16 @@
 import { connect, InsertOneWriteOpResult } from 'mongodb';
 import * as faker from 'faker';
 import { Types } from 'mongoose';
+import { config } from 'dotenv';
+import Stripe from 'stripe';
+
+config();
 
 async function seedUsers() {
+  const stripe = new Stripe(process.env.STRIPE_SECRET, {
+    apiVersion: '2020-08-27',
+  });
+
   const connection = await connect('mongodb://localhost', {
     useUnifiedTopology: true,
   });
@@ -34,10 +42,15 @@ async function seedUsers() {
   for (let i = 0; i < roundedNumberOfUsers; i++) {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
+    const stripeCustomer = await stripe.customers.create({
+      name: `${firstName} ${lastName}`,
+    });
+
     bulkWritePromises.push(
       db.collection('users').insertOne({
         firstName,
         lastName,
+        stripeReference: stripeCustomer.id,
       }),
     );
   }

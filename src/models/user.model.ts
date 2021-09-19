@@ -23,6 +23,11 @@ export class User {
     required: true,
   })
   lastName: string;
+
+  @Prop({
+    type: String,
+  })
+  stripeReference: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
