@@ -5,7 +5,11 @@ import { DoneCallback, Job } from 'bull';
 import { Model, Types } from 'mongoose';
 import { STRIPE } from 'src/lib/stripe';
 import { Contract, ContractDocument } from 'src/models/contract.model';
-import { Payment, PaymentDocument } from 'src/models/payment.model';
+import {
+  Payment,
+  PaymentDocument,
+  PaymentType,
+} from 'src/models/payment.model';
 import Stripe from 'stripe';
 import { AutoChargeQueue, ChargeQueueData } from './typings';
 
@@ -42,7 +46,7 @@ export class ChargeQueueProcessor {
         remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
       );
 
-      const idempotencyKey = `${job.data.month}/${job.data.year}-${job.data.contractId}`;
+      const idempotencyKey = `${job.data.contractId}-${job.data.month}/${job.data.year}-${PaymentType.Auto}`;
       const paymentIntent = await this.stripe.paymentIntents.create(
         {
           amount: paymentAmount,
@@ -57,6 +61,7 @@ export class ChargeQueueProcessor {
         amount: paymentAmount,
         user: contract.user,
         stripePaymentReference: paymentIntent.id,
+        type: PaymentType.Auto,
       });
 
       this.logger.debug(`Successful payment: ${payment}`);

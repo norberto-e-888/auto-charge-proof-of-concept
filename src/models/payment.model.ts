@@ -5,6 +5,10 @@ import { Contract, ContractDocument } from './contract.model';
 import { User } from './user.model';
 
 export type PaymentDocument = Payment & Document;
+export enum PaymentType {
+  Auto = 'auto',
+  Manual = 'manual',
+}
 
 @Schema({
   id: true,
@@ -44,6 +48,13 @@ export class Payment {
     unique: true,
   })
   stripePaymentReference: string;
+
+  @Prop({
+    type: PaymentType,
+    required: true,
+    enum: Object.values(PaymentType),
+  })
+  type: PaymentType;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
@@ -76,5 +87,3 @@ PaymentSchema.pre(
     next();
   },
 );
-
-export enum PaymentType {}
