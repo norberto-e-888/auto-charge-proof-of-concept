@@ -16,6 +16,11 @@ export enum PaymentType {
   Manual = 'manual',
 }
 
+export enum PaymentStatus {
+  Success = 'success',
+  Failure = 'failure',
+}
+
 const ContractStateProp: { [key in keyof ContractStateSnapshot]: PropOptions } =
   {
     effectiveLoanAmount: { type: Number },
@@ -50,18 +55,18 @@ export class Payment {
   user: User | Types.ObjectId | string;
 
   @Prop({
+    type: String,
+    enum: Object.values(PaymentStatus),
+    required: true,
+  })
+  status: PaymentStatus;
+
+  @Prop({
     type: Number,
     required: true,
     min: 0.01,
   })
   amount: number;
-
-  @Prop({
-    type: String,
-    required: true,
-    unique: true,
-  })
-  stripePaymentReference: string;
 
   @Prop({
     type: PaymentType,
@@ -72,10 +77,38 @@ export class Payment {
 
   @Prop({
     type: String,
-    required: function (this: PaymentDocument) {
-      return this.type === PaymentType.Auto;
-    },
     unique: true,
+    required: function (this: PaymentDocument) {
+      return this.status === PaymentStatus.Success;
+    },
+    set: function (this: PaymentDocument, val: string) {
+      if (this.status === PaymentStatus.Failure) {
+        return null;
+      }
+
+      return val;
+    },
+  })
+  stripePaymentReference: string;
+
+  @Prop({
+    type: String,
+    unique: true,
+    required: function (this: PaymentDocument) {
+      return (
+        this.type === PaymentType.Auto && this.status === PaymentStatus.Success
+      );
+    },
+    set: function (this: PaymentDocument, val: string) {
+      if (
+        this.status === PaymentStatus.Failure ||
+        this.type !== PaymentType.Auto
+      ) {
+        return null;
+      }
+
+      return val;
+    },
   })
   idempotencyKey: string;
 

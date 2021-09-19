@@ -3,6 +3,7 @@ import { JobOptions } from 'bull';
 export enum AutoChargeQueue {
   WriteChargesToQueue = 'write-charges-to-queue',
   Charge = 'charge',
+  ChargeDLQ = 'charge-dlq',
 }
 
 export interface WriteChargesToQueueData {

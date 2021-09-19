@@ -57,11 +57,11 @@ export class WriteChargesToQueueProcessor {
               year,
             },
             opts: {
-              attempts: 5,
-              backoff: {
+              attempts: Number.MAX_SAFE_INTEGER,
+              /*  backoff: {
                 type: 'exponential',
                 delay: 5000,
-              },
+              }, */
             },
           };
         });
