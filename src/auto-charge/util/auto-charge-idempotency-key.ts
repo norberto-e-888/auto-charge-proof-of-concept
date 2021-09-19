@@ -1,5 +1,7 @@
-import { PaymentType } from 'src/models/payment.model';
+import { PaymentStatus, PaymentType } from 'src/models/payment.model';
 import { ChargeQueueData } from '../typings';
 
-export default ({ contractId, month, year }: ChargeQueueData) =>
-  `${contractId}-${month}/${year}-${PaymentType.Auto}`;
+export const autoChargeIdempotencyKey = (
+  { contractId, month, year }: ChargeQueueData,
+  status: PaymentStatus,
+) => `${contractId}-${month}/${year}-${PaymentType.Auto}-${status}`;

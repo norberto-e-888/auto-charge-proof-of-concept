@@ -14,7 +14,7 @@ import {
 import { User } from 'src/models/user.model';
 import Stripe from 'stripe';
 import { AutoChargeQueue, ChargeQueueData } from './typings';
-import autoChargeIdempotencyKey from './util/auto-charge-idempotency-key';
+import { autoChargeIdempotencyKey } from './util/auto-charge-idempotency-key';
 
 @Processor(AutoChargeQueue.Charge)
 export class ChargeQueueProcessor {
@@ -29,18 +29,19 @@ export class ChargeQueueProcessor {
     private readonly contractModel: Model<ContractDocument>,
     @InjectQueue(AutoChargeQueue.ChargeDLQ)
     private readonly chargeQueueDLQ: Queue<
-      ChargeQueueData & { error: unknown }
+      ChargeQueueData & { error: unknown; paymentAmount: number }
     >,
   ) {}
 
   @Process()
   async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
+    let paymentAmount: number;
     try {
       const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
         job.data;
 
-      if (contractId === '614779b960e9ac1c6cd9dfde') {
-        throw new Error('Forced error for contract 614779b960e9ac1c6cd9dfde');
+      if (contractId === '61478b2ed21b0048b4b01880') {
+        throw new Error('Forced error for contract 61478b2ed21b0048b4b01880');
       }
 
       this.logger.debug(`Auto-charging contract: ${contractId}`);
@@ -59,11 +60,15 @@ export class ChargeQueueProcessor {
 
       const remainingDebt = effectiveLoanAmount - totalPaidSoFar;
       const incomeOwed = (salary / 12) * salaryPercentageOwed;
-      const paymentAmount = Math.round(
+      paymentAmount = Math.round(
         remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
       );
 
-      const idempotencyKey = autoChargeIdempotencyKey(job.data);
+      const idempotencyKey = autoChargeIdempotencyKey(
+        job.data,
+        PaymentStatus.Success,
+      );
+
       const paymentIntent = await this.stripe.paymentIntents.create(
         {
           amount: paymentAmount,
@@ -79,7 +84,7 @@ export class ChargeQueueProcessor {
       await this.paymentModel.create({
         contract: new Types.ObjectId(contractId),
         amount: paymentAmount,
-        user: contract.user,
+        user: new Types.ObjectId((contract.user as User).id),
         type: PaymentType.Auto,
         status: PaymentStatus.Success,
         stripeReference: paymentIntent.id,
@@ -104,19 +109,33 @@ export class ChargeQueueProcessor {
         if (job.attemptsMade >= 5) {
           try {
             this.logger.warn(
-              `Moving charge job ${autoChargeIdempotencyKey(job.data)} to DLQ`,
+              `Moving charge job ${autoChargeIdempotencyKey(
+                job.data,
+                PaymentStatus.Success,
+              )} to DLQ`,
             );
 
-            await this.chargeQueueDLQ.add({
-              ...job.data,
-              error,
-            });
+            await this.chargeQueueDLQ.add(
+              {
+                ...job.data,
+                error,
+                paymentAmount,
+              },
+              {
+                attempts: 4,
+                backoff: {
+                  type: 'exponential',
+                  delay: 100,
+                },
+              },
+            );
 
             done();
           } catch (error) {
             this.logger.error(
               `Error moving charge job to DLQ: ${autoChargeIdempotencyKey(
                 job.data,
+                PaymentStatus.Success,
               )}`,
             );
 

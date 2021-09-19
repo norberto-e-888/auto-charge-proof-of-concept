@@ -82,7 +82,7 @@ export class Payment {
       return this.status === PaymentStatus.Success;
     },
     set: function (this: PaymentDocument, val: string) {
-      if (this.status === PaymentStatus.Failure) {
+      if (this.status !== PaymentStatus.Success) {
         return null;
       }
 
@@ -95,15 +95,10 @@ export class Payment {
     type: String,
     unique: true,
     required: function (this: PaymentDocument) {
-      return (
-        this.type === PaymentType.Auto && this.status === PaymentStatus.Success
-      );
+      return this.type === PaymentType.Auto;
     },
     set: function (this: PaymentDocument, val: string) {
-      if (
-        this.status === PaymentStatus.Failure ||
-        this.type !== PaymentType.Auto
-      ) {
+      if (this.type !== PaymentType.Auto) {
         return null;
       }
 
