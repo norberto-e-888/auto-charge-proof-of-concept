@@ -39,10 +39,6 @@ export class ChargeQueueProcessor {
       const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
         job.data;
 
-      if (contractId === '61478b2ed21b0048b4b01880') {
-        throw new Error('Forced error for contract 61478b2ed21b0048b4b01880');
-      }
-
       this.logger.debug(`Auto-charging contract: ${contractId}`);
       const contract = await this.contractModel
         .findById(contractId)
