@@ -71,10 +71,6 @@ export class ChargeQueueProcessor {
         { idempotencyKey },
       );
 
-      if (contractId === '61479c8c8ce7264024384c69') {
-        throw new Error('Forced error');
-      }
-
       await this.paymentModel.create({
         contract: new Types.ObjectId(contractId),
         amount: paymentAmount,
