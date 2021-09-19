@@ -97,6 +97,12 @@ export class ChargeDLQProcessor {
 
         done();
       } else {
+        const idempotencyKey = autoChargeIdempotencyKey(job.data);
+        const file = `${__dirname}/data/unprocessable.json`;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const unprocessable: UnprocessableData = require(file);
+        unprocessable.charges[idempotencyKey] = job.data;
+        fs.writeFileSync(file, JSON.stringify(unprocessable));
         this.logger.error('Error processing charge DQL job', error);
         done(new Error(error));
       }
