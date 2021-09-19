@@ -31,17 +31,12 @@ export class ChargeDLQProcessor {
 
   @Process()
   async charge(
-    job: Job<ChargeQueueData & { error: unknown; paymentAmount: number }>,
+    job: Job<ChargeQueueData & { error: unknown }>,
     done: DoneCallback,
   ) {
     try {
-      const {
-        contractId,
-        paymentAmount,
-        effectiveLoanAmount,
-        salary,
-        salaryPercentageOwed,
-      } = job.data;
+      const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
+        job.data;
 
       const idempotencyKey = autoChargeIdempotencyKey(
         job.data,
@@ -63,6 +58,22 @@ export class ChargeDLQProcessor {
 
       this.logger.debug(wasPaymentProcessed);
       if (!wasPaymentProcessed) {
+        const paymentsMadeForContract = await this.paymentModel.find({
+          contract: contractId,
+          status: PaymentStatus.Success,
+        });
+
+        const totalPaidSoFar = paymentsMadeForContract.reduce(
+          (total, { amount }) => total + amount,
+          0,
+        );
+
+        const remainingDebt = effectiveLoanAmount - totalPaidSoFar;
+        const incomeOwed = (salary / 12) * salaryPercentageOwed;
+        const paymentAmount = Math.round(
+          remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
+        );
+
         await this.paymentModel.create({
           contract: new Types.ObjectId(contractId),
           amount: paymentAmount,

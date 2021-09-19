@@ -29,13 +29,12 @@ export class ChargeQueueProcessor {
     private readonly contractModel: Model<ContractDocument>,
     @InjectQueue(AutoChargeQueue.ChargeDLQ)
     private readonly chargeQueueDLQ: Queue<
-      ChargeQueueData & { error: unknown; paymentAmount: number }
+      ChargeQueueData & { error: unknown }
     >,
   ) {}
 
   @Process()
   async charge(job: Job<ChargeQueueData>, done: DoneCallback) {
-    let paymentAmount: number;
     try {
       const { contractId, effectiveLoanAmount, salary, salaryPercentageOwed } =
         job.data;
@@ -51,6 +50,7 @@ export class ChargeQueueProcessor {
 
       const paymentsMadeForContract = await this.paymentModel.find({
         contract: contractId,
+        status: PaymentStatus.Success,
       });
 
       const totalPaidSoFar = paymentsMadeForContract.reduce(
@@ -60,7 +60,7 @@ export class ChargeQueueProcessor {
 
       const remainingDebt = effectiveLoanAmount - totalPaidSoFar;
       const incomeOwed = (salary / 12) * salaryPercentageOwed;
-      paymentAmount = Math.round(
+      const paymentAmount = Math.round(
         remainingDebt >= incomeOwed ? incomeOwed : remainingDebt,
       );
 
@@ -119,7 +119,6 @@ export class ChargeQueueProcessor {
               {
                 ...job.data,
                 error,
-                paymentAmount,
               },
               {
                 attempts: 4,
